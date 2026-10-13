@@ -1,0 +1,5 @@
+.DS_Store
+.env
+# Internal notes for publishing, not part of the public repo
+TEMPLATE.md
+OUTREACH.md

@@ -1,0 +1,10 @@
+# Same settings as Postiz's own docker-compose (dynamicconfig/development-sql.yaml).
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+# Postiz registers its search attributes (postId, organizationId) at startup
+# and uses them right away. This makes Temporal see them without waiting for
+# its cache to refresh. The extra database read is negligible at this scale.
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}

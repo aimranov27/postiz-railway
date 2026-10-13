@@ -1,0 +1,75 @@
+# Reproduces the Railway template locally. Used by scripts/smoke-test.sh.
+#
+# Same images, same variables, same wiring as on Railway. Two differences:
+# the public URL is a made-up *.up.railway.app host (send it in the Host
+# header), and Postiz is published on 127.0.0.1:${POSTIZ_HOST_PORT}.
+name: postiz-smoke
+
+x-postgres-password: &postgres-password ${POSTGRES_PASSWORD:-smoke-postgres-password}
+x-redis-password: &redis-password ${REDIS_PASSWORD:-smoke-redis-password}
+
+services:
+  postgres:
+    # Railway's standard Postgres database service.
+    image: ghcr.io/railwayapp-templates/postgres-ssl:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: *postgres-password
+      POSTGRES_DB: railway
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d railway"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    # Railway's standard Redis database service.
+    image: redis:8
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-smoke-redis-password}", "--save", "60", "1", "--dir", "/data"]
+    volumes:
+      - redis-data:/data
+
+  temporal:
+    build: ./temporal
+    image: postiz-smoke-temporal:local
+    environment:
+      PORT: "8080"
+      POSTGRES_SEEDS: postgres
+      DB_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PWD: *postgres-password
+    depends_on:
+      - postgres
+
+  postiz:
+    build: ./postiz
+    image: postiz-smoke-postiz:local
+    ports:
+      - "127.0.0.1:${POSTIZ_HOST_PORT:-39100}:8080"
+    environment:
+      PORT: "8080"
+      MAIN_URL: https://${PUBLIC_DOMAIN:-postiz-smoke.up.railway.app}
+      FRONTEND_URL: https://${PUBLIC_DOMAIN:-postiz-smoke.up.railway.app}
+      NEXT_PUBLIC_BACKEND_URL: https://${PUBLIC_DOMAIN:-postiz-smoke.up.railway.app}/api
+      JWT_SECRET: ${JWT_SECRET:-smoke-jwt-secret-smoke-jwt-secret}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-smoke-postgres-password}@postgres:5432/railway
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-smoke-redis-password}@redis:6379
+      TEMPORAL_ADDRESS: temporal:7233
+      DISABLE_REGISTRATION: "true"
+      RUN_CRON: "true"
+      POSTIZ_ADMIN_EMAIL: ${POSTIZ_ADMIN_EMAIL:-admin@example.com}
+      POSTIZ_ADMIN_PASSWORD: ${POSTIZ_ADMIN_PASSWORD:-smoke-admin-password}
+    volumes:
+      - postiz-uploads:/uploads
+    depends_on:
+      - postgres
+      - redis
+      - temporal
+
+volumes:
+  postgres-data:
+  redis-data:
+  postiz-uploads:
