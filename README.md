@@ -2,7 +2,7 @@
 
 Run [Postiz](https://github.com/gitroomhq/postiz-app), the open-source social media scheduler, on Railway. It stays on the current Postiz release, and every version bump is smoke-tested before it reaches you.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/TEMPLATE_CODE?utm_medium=integration&utm_source=template&utm_campaign=postiz)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/postiz-social-medi-1?utm_medium=integration&utm_source=template&utm_campaign=postiz)
 
 ## What you get
 
