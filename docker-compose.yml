@@ -11,7 +11,7 @@ x-redis-password: &redis-password ${REDIS_PASSWORD:-smoke-redis-password}
 services:
   postgres:
     # Railway's standard Postgres database service.
-    image: ghcr.io/railwayapp-templates/postgres-ssl:17
+    image: ghcr.io/railwayapp-templates/postgres-ssl:18
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: *postgres-password

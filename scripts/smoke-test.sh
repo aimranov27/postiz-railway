@@ -12,6 +12,8 @@
 #
 # Used locally and by CI. Needs docker, curl and jq.
 set -euo pipefail
+# Note: don't pipe into `grep -q`. It exits on the first match, the writer
+# gets SIGPIPE, and pipefail turns a match into a failure.
 
 cd "$(dirname "$0")/.."
 
@@ -77,7 +79,7 @@ wait_for_workers() {
 wait_for_cron_run() {
   for _ in $(seq 1 60); do
     temporal_cli workflow show -w missing-post-workflow -o json 2>/dev/null \
-      | grep -qiE 'ACTIVITY_TASK_COMPLETED|ActivityTaskCompleted' && return 0
+      | grep -iE 'ACTIVITY_TASK_COMPLETED|ActivityTaskCompleted' >/dev/null && return 0
     sleep 5
   done
   fail "the missed-posts workflow never completed an activity, so the workers are not executing work"
@@ -96,7 +98,7 @@ echo "== first boot"
 wait_healthy
 
 echo "-- web UI"
-http "$BASE/auth/login" | grep -qi '<html' || fail "the login page did not load"
+http "$BASE/auth/login" | grep -i '<html' >/dev/null || fail "the login page did not load"
 [ "$(status "$BASE/auth/register")" = "307" ] || fail "the sign-up page is not redirected to login"
 
 echo "-- seeded account"
@@ -130,7 +132,7 @@ echo "-- Temporal and workers"
   || fail "orchestrator health check failed"
 wait_for_workers
 wait_for_cron_run
-temporal_cli operator search-attribute list | grep -q postId || fail "Postiz search attributes are missing in Temporal"
+temporal_cli operator search-attribute list | grep postId >/dev/null || fail "Postiz search attributes are missing in Temporal"
 run_id="$(temporal_cli workflow describe -w missing-post-workflow -o json | jq -r '.workflowExecutionInfo.execution.runId')"
 [[ "$run_id" =~ ^[0-9a-f-]{36}$ ]] || fail "could not read the missed-posts workflow run ID ($run_id)"
 
