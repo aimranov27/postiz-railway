@@ -7,7 +7,7 @@
 #
 # The version is pinned so every deploy is reproducible. The update workflow
 # (.github/workflows/update.yml) bumps it after a smoke test.
-ARG POSTIZ_VERSION=v2.25.2
+ARG POSTIZ_VERSION=v2.25.3
 
 FROM ghcr.io/gitroomhq/postiz-app:${POSTIZ_VERSION}
 
