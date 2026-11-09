@@ -8,7 +8,7 @@
 #
 # Versions are pinned so every deploy is reproducible. The update workflow
 # (.github/workflows/update.yml) bumps them after a smoke test.
-ARG TEMPORAL_VERSION=1.32.1
+ARG TEMPORAL_VERSION=1.32.2
 
 FROM temporalio/admin-tools:${TEMPORAL_VERSION} AS admin-tools
 
